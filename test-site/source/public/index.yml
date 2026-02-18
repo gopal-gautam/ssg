@@ -1,0 +1,26 @@
+type: page
+layout: page
+title: Welcome to My Site
+slug: index
+
+inject:
+  "h1": title
+  ".content": body_html
+
+body:
+  format: markdown
+  content: |
+    # Welcome!
+
+    This is a static site built with SSG - a static site generator that uses CSS selectors for content injection.
+
+    ## Features
+
+    - Real HTML/CSS/JS templates (no custom templating language)
+    - YAML files as content source
+    - CSS selector-based content injection
+    - Markdown support
+    - Blog features (tags, RSS, sitemap)
+    - Live reload dev server
+
+    Check out the [blog](/blog) to see posts in action!

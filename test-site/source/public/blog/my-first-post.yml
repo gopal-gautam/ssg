@@ -1,0 +1,34 @@
+type: post
+layout: post
+title: My First Post
+slug: my-first-post
+date: 2025-01-01
+tags: [tech, tutorial]
+draft: false
+
+inject:
+  "h1.title": title
+  ".post-meta .date": date
+  ".content": body_html
+
+body:
+  format: markdown
+  content: |
+    # Hello World!
+
+    This is my first blog post using the SSG static site generator.
+
+    ## Features
+
+    - **Markdown support**: Write content in markdown
+    - **Tag pages**: Automatic tag page generation
+    - **RSS feed**: Stay updated with RSS
+    - **Sitemap**: SEO-friendly sitemap generation
+
+    ## Code Example
+
+    ```javascript
+    console.log('Hello from SSG!');
+    ```
+
+    Check out more posts in the [blog](/blog)!

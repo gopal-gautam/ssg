@@ -1,0 +1,19 @@
+type: post
+layout: post
+title: Testing the New Command
+slug: testing-the-new-command
+date: 2025-12-31
+tags: []
+draft: false
+
+inject:
+  "h1.title": title
+  ".post-meta .date": date
+  ".content": body_html
+
+body:
+  format: markdown
+  content: |
+    # Testing the New Command
+
+    Your content here...

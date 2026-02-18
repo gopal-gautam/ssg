@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-bind="title">My Site</title>
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+  <!-- @include partials/header.html -->
+
+  <main class="post-content">
+    <article>
+      <h1 class="title" data-bind="title">Post Title</h1>
+      <div class="post-meta">
+        <time class="date" data-bind="date"></time>
+        <span class="reading-time" data-bind="reading_time"></span> min read
+      </div>
+      <div class="content" data-bind="body_html">
+        <!-- Post content -->
+      </div>
+    </article>
+  </main>
+
+  <!-- @include partials/footer.html -->
+</body>
+</html>

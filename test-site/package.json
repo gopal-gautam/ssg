@@ -1,0 +1,12 @@
+{
+  "name": "my-ssg-site",
+  "version": "1.0.0",
+  "description": "My static site built with SSG",
+  "scripts": {
+    "build": "ssg build",
+    "serve": "ssg serve",
+    "new": "ssg new"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

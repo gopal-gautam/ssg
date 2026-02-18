@@ -1,0 +1,17 @@
+type: page
+layout: page
+title: About
+slug: about
+
+inject:
+  "h1": title
+  ".content": body_html
+
+body:
+  format: markdown
+  content: |
+    # About This Site
+
+    This site was built using a selector-based static site generator.
+
+    The big differentiator: content injection happens by CSS selectors, so designers can work with normal HTML/CSS, and writers can edit YAML.
