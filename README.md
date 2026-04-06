@@ -14,7 +14,11 @@ A modern static site generator that uses CSS selectors for content injection. No
 - **Extensible architecture** - Clean modular design
 
 ## Installation
-
+1. Install from npm
+```bash
+npm i selector-ssg
+```
+2. Install from source
 ```bash
 # Install dependencies
 npm install
