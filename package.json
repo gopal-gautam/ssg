@@ -4,6 +4,10 @@
   "description": "A static site generator using CSS selectors for content injection",
   "main": "src/index.js",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gopal-gautam/ssg.git"
+  },
   "bin": {
     "ssg": "./bin/cli.js"
   },
