@@ -89,4 +89,63 @@ describe('Injector', () => {
       assert.match(result, /Sub text/);
     });
   });
+
+  describe('inject() - data-loop', () => {
+    it('renders one node per scalar array item and removes the template', () => {
+      const injector = makeInjector();
+      const html = '<html><body><ul data-loop="tag in tags"><li data-bind="tag"></li></ul></body></html>';
+      const result = injector.inject(html, { tags: ['tech', 'tutorial'] });
+      assert.match(result, /<li>tech<\/li>/);
+      assert.match(result, /<li>tutorial<\/li>/);
+      assert.doesNotMatch(result, /data-loop/);
+      assert.doesNotMatch(result, /data-bind/);
+    });
+
+    it('renders an array of objects with field and attribute binding', () => {
+      const injector = makeInjector();
+      const html = '<html><body><nav data-loop="item in menu"><a data-bind="item.text" data-bind-attr="href:item.url"></a></nav></body></html>';
+      const result = injector.inject(html, { menu: [{ text: 'Home', url: '/' }, { text: 'About', url: '/about' }] });
+      assert.match(result, /<a href="\/">Home<\/a>/);
+      assert.match(result, /<a href="\/about">About<\/a>/);
+    });
+
+    it('injects HTML for _html suffixed binds inside a loop', () => {
+      const injector = makeInjector();
+      const html = '<html><body><div data-loop="post in posts"><article data-bind="post.body_html"></article></div></body></html>';
+      const result = injector.inject(html, { posts: [{ body_html: '<p>Hi</p>' }] });
+      assert.match(result, /<article><p>Hi<\/p><\/article>/);
+    });
+
+    it('leaves an empty container for an empty array and drops the template', () => {
+      const injector = makeInjector();
+      const html = '<html><body><ul data-loop="tag in tags"><li data-bind="tag"></li></ul></body></html>';
+      const result = injector.inject(html, { tags: [] });
+      assert.match(result, /<ul><\/ul>/);
+      assert.doesNotMatch(result, /<li>/);
+    });
+
+    it('does not throw for a non-array value in non-strict mode', () => {
+      const injector = makeInjector(false);
+      const html = '<html><body><ul data-loop="tag in tags"><li data-bind="tag"></li></ul></body></html>';
+      assert.doesNotThrow(() => injector.inject(html, { tags: 'oops' }));
+    });
+
+    it('throws for a non-array value in strict mode', () => {
+      const injector = makeInjector(true);
+      const html = '<html><body><ul data-loop="tag in tags"><li data-bind="tag"></li></ul></body></html>';
+      assert.throws(() => injector.inject(html, { tags: 'oops' }), /not an array/);
+    });
+
+    it('supports nested loops with access to the outer variable', () => {
+      const injector = makeInjector();
+      const html = '<html><body><div data-loop="group in groups"><section><h3 data-bind="group.name"></h3><ul data-loop="item in group.items"><li data-bind="item"></li></ul></section></div></body></html>';
+      const data = { groups: [{ name: 'A', items: ['a1', 'a2'] }, { name: 'B', items: ['b1'] }] };
+      const result = injector.inject(html, data);
+      assert.match(result, /<h3>A<\/h3>/);
+      assert.match(result, /<li>a1<\/li>/);
+      assert.match(result, /<li>a2<\/li>/);
+      assert.match(result, /<h3>B<\/h3>/);
+      assert.match(result, /<li>b1<\/li>/);
+    });
+  });
 });

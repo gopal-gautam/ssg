@@ -1,6 +1,6 @@
 {
   "name": "selector-ssg",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A static site generator using CSS selectors for content injection",
   "main": "src/index.js",
   "type": "module",

@@ -21,10 +21,127 @@ export class Injector {
       }
     }
 
+    // Process data-loop directives (must run before data-bind so loop-internal
+    // binds resolve against item scope and get stripped before the global pass)
+    this.processLoops(document, data);
+
     // Process data-bind attributes automatically
     this.processDataBindAttributes(document, data);
 
     return dom.serialize();
+  }
+
+  /**
+   * Process all top-level data-loop directives. Nested loops are handled
+   * recursively from within processLoopElement using the enclosing scope.
+   */
+  processLoops(document, data) {
+    const loops = Array.from(document.querySelectorAll('[data-loop]'))
+      .filter(el => el.parentElement === null || el.parentElement.closest('[data-loop]') === null);
+
+    for (const container of loops) {
+      this.processLoopElement(container, {}, data);
+    }
+  }
+
+  /**
+   * Expand a single data-loop container by cloning its template child once per
+   * array item, binding each clone against a per-item scope.
+   */
+  processLoopElement(container, parentScope, data) {
+    const expr = container.getAttribute('data-loop');
+    container.removeAttribute('data-loop');
+
+    const match = expr.match(/^\s*(\w+)\s+in\s+(.+?)\s*$/);
+    if (!match) {
+      console.warn(`Warning: malformed data-loop expression: "${expr}"`);
+      return;
+    }
+
+    const [, varName, fieldRef] = match;
+    const items = this.yamlParser.resolveField({ ...data, ...parentScope }, fieldRef);
+    const template = container.firstElementChild;
+
+    if (!Array.isArray(items)) {
+      if (this.strictSelectors && items !== undefined) {
+        throw new Error(`data-loop "${fieldRef}" is not an array`);
+      }
+      if (items !== undefined) {
+        console.warn(`Warning: data-loop "${fieldRef}" is not an array`);
+      }
+      if (template) container.removeChild(template);
+      return;
+    }
+
+    if (!template) {
+      console.warn(`Warning: data-loop "${fieldRef}" has no template child element`);
+      return;
+    }
+
+    const fragment = container.ownerDocument.createDocumentFragment();
+
+    for (const item of items) {
+      const scope = { ...parentScope, [varName]: item };
+      const clone = template.cloneNode(true);
+
+      // Resolve nested loops first (innermost binds depend on their own scope)
+      const nested = Array.from(clone.querySelectorAll('[data-loop]'))
+        .filter(el => el.parentElement.closest('[data-loop]') === null);
+      for (const inner of nested) {
+        this.processLoopElement(inner, scope, data);
+      }
+
+      this.bindScopedNode(clone, scope, data);
+      fragment.appendChild(clone);
+    }
+
+    container.removeChild(template);
+    container.appendChild(fragment);
+  }
+
+  /**
+   * Resolve data-bind / data-bind-attr on a cloned loop node against the
+   * item scope, falling back to page-level data.
+   */
+  bindScopedNode(root, scope, data) {
+    const resolve = (ref) => {
+      const scoped = this.yamlParser.resolveField(scope, ref);
+      return scoped !== undefined ? scoped : this.yamlParser.resolveField(data, ref);
+    };
+
+    const bindTargets = [root, ...root.querySelectorAll('[data-bind]')]
+      .filter(el => el.hasAttribute('data-bind'));
+    for (const el of bindTargets) {
+      const ref = el.getAttribute('data-bind');
+      el.removeAttribute('data-bind');
+      const value = resolve(ref);
+      if (value === undefined) {
+        console.warn(`Warning: data-bind="${ref}" could not be resolved`);
+        continue;
+      }
+      if (ref.endsWith('_html')) {
+        el.innerHTML = String(value);
+      } else {
+        el.textContent = String(value);
+      }
+    }
+
+    const attrTargets = [root, ...root.querySelectorAll('[data-bind-attr]')]
+      .filter(el => el.hasAttribute('data-bind-attr'));
+    for (const el of attrTargets) {
+      const spec = el.getAttribute('data-bind-attr');
+      el.removeAttribute('data-bind-attr');
+      for (const pair of spec.split(',')) {
+        const idx = pair.indexOf(':');
+        if (idx === -1) continue;
+        const attr = pair.slice(0, idx).trim();
+        const ref = pair.slice(idx + 1).trim();
+        const value = resolve(ref);
+        if (value !== undefined) {
+          el.setAttribute(attr, String(value));
+        }
+      }
+    }
   }
 
   /**
