@@ -310,11 +310,12 @@ inject:
 
 ## Warnings (Expected)
 
-Some warnings during build are expected:
-- "No elements found for selector: .post-list" - Blog index template needs updating
-- "data-bind='body_html' could not be resolved" - For virtual pages without body content
+Some warnings during build may appear if a layout references a field that a
+page does not provide. They are non-fatal and the build still completes.
 
-These are non-fatal and the build completes successfully.
+Blog index and tag pages render their post list into `body_html`, so the
+default layouts pick it up through the standard `data-bind="body_html"`
+region (no special `.post-list` selector required).
 
 ## Extensibility Points
 

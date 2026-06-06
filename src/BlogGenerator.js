@@ -48,28 +48,25 @@ export class BlogGenerator {
     const indexSlug = this.config.get('blog.index_slug');
     const postsPerPage = this.config.get('blog.posts_per_page');
     const layout = this.config.get('blog.index_layout');
+    const visiblePosts = posts.slice(0, postsPerPage);
 
-    // Create virtual YAML data for blog index
+    // Create virtual YAML data for blog index. The post list is provided as
+    // body_html so it renders through the standard data-bind="body_html"
+    // region that the default layouts already expose.
     const indexData = {
       type: 'page',
       layout: layout,
       title: 'Blog',
       slug: indexSlug,
-      posts: posts.slice(0, postsPerPage),
+      posts: visiblePosts,
       total_posts: posts.length,
-      inject: {
-        'h1': 'title',
-        '.post-list': 'posts_html'
-      },
+      body_html: this.generatePostListHtml(visiblePosts),
       _meta: {
         filePath: 'virtual:blog-index',
         relativePath: indexSlug,
         filename: indexSlug
       }
     };
-
-    // Generate posts HTML
-    indexData.posts_html = this.generatePostListHtml(posts.slice(0, postsPerPage));
 
     return this.renderer.render(indexData);
   }
@@ -119,18 +116,13 @@ export class BlogGenerator {
         slug: `tags/${tag}`,
         posts: tagPosts,
         tag: tag,
-        inject: {
-          'h1': 'title',
-          '.post-list': 'posts_html'
-        },
+        body_html: this.generatePostListHtml(tagPosts),
         _meta: {
           filePath: `virtual:tag-${tag}`,
           relativePath: `tags/${tag}`,
           filename: tag
         }
       };
-
-      tagData.posts_html = this.generatePostListHtml(tagPosts);
 
       const result = this.renderer.render(tagData);
       tagPages.push(result);
